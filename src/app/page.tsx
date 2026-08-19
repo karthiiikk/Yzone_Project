@@ -119,7 +119,7 @@ export default function Dashboard() {
         <p className="text-gray-500 text-sm m-0">
           Logged in as{' '}
           <span className="font-semibold text-indigo-700">
-            {consents[0]?.user?.name ?? 'Alice Johnson'}
+            {consents[0]?.user?.name ?? 'Karthik'}
           </span>{' '}
           · Manage all third-party data access permissions in one place.
         </p>
