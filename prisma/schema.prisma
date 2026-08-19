@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  consents  Consent[]
+}
+
+model ClientApp {
+  id            String     @id @default(cuid())
+  name          String
+  description   String
+  clientId      String     @unique
+  defaultScopes String     // JSON array: ["read:health:metrics","read:location:current"]
+  createdAt     DateTime   @default(now())
+  consents      Consent[]
+  auditLogs     AuditLog[]
+}
+
+model Consent {
+  id            String     @id @default(cuid())
+  userId        String
+  appId         String
+  grantedScopes String     // JSON array of user-approved scopes
+  status        String     @default("REQUESTED") // REQUESTED | ACTIVE | EXPIRED | REVOKED
+  expiresAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  user          User       @relation(fields: [userId], references: [id])
+  app           ClientApp  @relation(fields: [appId], references: [id])
+  auditLogs     AuditLog[]
+}
+
+model AuditLog {
+  id             String    @id @default(cuid())
+  consentId      String
+  clientId       String
+  requestedScope String    // The single scope requested for this access
+  status         String    // ALLOWED | DENIED
+  accessedAt     DateTime  @default(now())
+  previousHash   String    // Hash of the previous AuditLog entry (tamper-evident chain)
+  currentHash    String    // SHA-256 of this entry's data + previousHash
+
+  consent        Consent   @relation(fields: [consentId], references: [id])
+  app            ClientApp @relation(fields: [clientId], references: [id])
+}
+
